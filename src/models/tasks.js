@@ -1,7 +1,6 @@
-// define a Tasks model
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const Task = mongoose.model('Tasks', {
+const Task = mongoose.model('Task', {
     description: {
         type: String,
         required: true,
@@ -13,5 +12,4 @@ const Task = mongoose.model('Tasks', {
     }
 })
 
-
-module.exports = Task;
+module.exports = Task
