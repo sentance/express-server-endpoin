@@ -50,6 +50,27 @@ router.get('/user/me', auth, async (req, res) => {
     
 })
 
+router.post('/user/logout', auth, async(req, res)=>{
+    try{
+        req.user.tokens =  req.user.tokens.filter((token)=>{
+            return token.token !== token
+        })
+        await req.user.save()
+
+        res.send()
+    }catch(e){
+        res.status(500).send(e)
+    }
+} )
+router.post('/users/logoutAll', auth, async (req, res) => {
+    try {
+        req.user.tokens = []
+        await req.user.save()
+        res.send()
+    } catch (e) {
+        res.status(500).send()
+    }
+})
 router.patch('/users/:id', async (req, res)=>{
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'password', 'age', 'email']
@@ -79,7 +100,7 @@ router.delete('/users/:id', async (req, res)=>{
     try{
         const user = await User.findByIdAndDelete(req.params.id)
         if(!user){
-            return res.status(404).send()
+            return res.status(404).send(e)
         }
         res.send(user)
 
