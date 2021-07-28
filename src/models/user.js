@@ -47,6 +47,13 @@ const userSchema = new mongoose.Schema( {
         }
     }]
     })
+//relationships with tasks model
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
 //generate auth token to user
 userSchema.methods.generateAuthToken = async function(){
     const user = this
@@ -57,7 +64,14 @@ userSchema.methods.generateAuthToken = async function(){
     return token
 
 }
-
+//convert to object with hidden rows
+userSchema.methods.toJSON = function(){
+    const user = this
+    const userObject = user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
 
 //found user by email and password
 userSchema.statics.findByCredentials = async (email, password) => {
