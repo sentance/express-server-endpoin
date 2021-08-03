@@ -3,6 +3,8 @@ const router = new express.Router()
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const multer = require('multer')
+const storage = multer.memoryStorage()
+const sharp = require('sharp')
 
 router.post('/users', async (req, res)=>{
     const user = new User(req.body)
@@ -90,21 +92,45 @@ router.delete('/users/me', auth, async (req, res) => {
 
 
 const upload = multer({
-    dest: 'avatars',
     limits: {
-        fileSize: 1000000
+         fileSize: 1000000
     },
-    fileFilter(req, file, cb){
-        if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
-            return cb('File must be a picture')
-        }
-        cb(undefined, false)
-        // cb(new Error('File must be PDF'))
-        // cb(undefined, true)
-        // cb(undefined, false)
-    }
+    fileFilter(req, file, cb) {
+         if(!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+              return cb(new Error('Please upload a jpg, jpeg, png images'))
+         }
+         cb(undefined, true)
+    },
+    storage
 })
-router.post('/users/me/avatars', upload.single('avatar'), (req, res)=>{
-    res.send('Uploaded')
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+        const buffer = await sharp(req.file.buffer).resize(300).png().toBuffer()
+        req.user.avatar = buffer
+        await req.user.save()
+        res.send()
+ 
+}, (error, req, res, next) => {
+    res.status(400).send({ error })
+    next()
+
+})
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined
+    await req.user.save()
+    res.status(200)
+})
+
+router.get('/users/:id/avatar', async(req, res)=>{
+    try{
+        const user = await User.findById(req.params.id)
+        if(!user || !user.avatar){
+            throw new Error()
+        }
+        res.set('Content-type', 'image/jpg')
+        res.send(user.avatar)
+    }catch(e){
+        res.status(404).send()
+    }
 })
 module.exports = router
