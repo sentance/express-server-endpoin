@@ -9,9 +9,7 @@ const sendWelcomeMessage = (email, name)=>{
     from: 'order@weblion.net',
     subject: 'Thank you for registration',
     text: `You are a genius. Good luck ${name}`
-  }).then(()=>{
-    console.log('message has been sent')
-  }).catch((e)=>{
+  }).then(()=>console.log('message has been sent')).catch((e)=>{
     console.log(e)
   })
 }
